@@ -1,25 +1,20 @@
 ﻿using CARS.Entities;
 using CARS.Exceptions;
 using CARS.Utility;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CARS.Repository
 {
-    internal class ReportsRepository : IReportsRepository
+    public class ReportsRepository : IReportsRepository
     {
-        string connectionstring;
+        public string connectionstring;
         SqlCommand cmd = null;
         public ReportsRepository()
         {
             connectionstring = DbConnUtil.GetConnectionString();
             cmd = new SqlCommand();
         }
-        public Reports generateIncidentReport(Incidents incident)
+        public Reports generateIncidentReport(int incidentID)
         {
             Reports report = new Reports();
             try
@@ -27,7 +22,7 @@ namespace CARS.Repository
                 using (SqlConnection conn = new SqlConnection(connectionstring))
                 {
                     cmd.CommandText = "select * from Reports where IncidentID=@id";
-                    cmd.Parameters.AddWithValue("@id", incident.IncidentID);
+                    cmd.Parameters.AddWithValue("@id",incidentID);
                     cmd.Connection = conn;
                     conn.Open();
                     SqlDataReader reader = cmd.ExecuteReader();
@@ -40,22 +35,16 @@ namespace CARS.Repository
                         report.ReportDate = ((DateTime)reader["ReportDate"]).Date;
                         report.ReportDetails = (string)reader["ReportDetails"];
                     }
-                    if(report==null) throw new ReportNotFoundException("Report not found.");
+                    cmd.Parameters.Clear();
+                    if (report.ReportID==0)
+                    {
+                        throw new ReportNotFoundException("Report not found.");
+                    }
 
                 }
                         
-            }
-            catch (Exception e) { Console.WriteLine(e.Message); }
+            }finally { cmd.Dispose(); }
             return report;
         }
-        //public Reports generateIncidentReport(Incidents incident)
-        //{
-        //    Reports report=reports.Find(i=>i.IncidentID==incident.IncidentID);
-        //    if(report!=null) { return report; }
-        //    else
-        //    {
-        //        throw new ReportNotFoundException("Report Not Found");
-        //    }
-        //}
     }
 }

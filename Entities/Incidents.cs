@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CARS.Entities
+﻿namespace CARS.Entities
 {
-    internal class Incidents
+    public class Incidents
     {
         int incidentID;
         string incidentType;
@@ -42,7 +35,7 @@ namespace CARS.Entities
         public Incidents() { }
         public override string ToString()
         {
-            return $"incidentID::{IncidentID}\t incidentType::{IncidentType}\t incidentDate::{IncidentDate}\t location::{Location}\t description::{Description}\t status::{Status}\t victimID::{VictimID}\t suspectID::{SuspectID}\t caseid::{CaseID}";
+            return $"incidentID::{IncidentID}\t incidentType::{IncidentType}\t incidentDate::{IncidentDate.Date}\t status::{Status}";
 
         }
 

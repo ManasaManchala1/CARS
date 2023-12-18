@@ -1,11 +1,4 @@
-﻿using CARS.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CARS.Service
+﻿namespace CARS.Service
 {
     internal interface ICrimeAnalysisService
     {
@@ -16,5 +9,6 @@ namespace CARS.Service
         void getCaseDetails();
         void updateCaseDetails();
         void getAllCases();
+        void createCase();
     }
 }

@@ -1,20 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data.SqlClient;
 using CARS.Entities;
 using CARS.Exceptions;
-using CARS.Repository;
 using CARS.Utility;
 
 namespace CARS.Repository
 {
-    internal class IncidentsRepository:IIncidentsRepository
+    public class IncidentsRepository : IIncidentsRepository
     {
-        string connectionstring;
+        public string connectionstring;
         SqlCommand cmd = null;
         public IncidentsRepository() {
             connectionstring = DbConnUtil.GetConnectionString();
@@ -63,7 +56,7 @@ namespace CARS.Repository
                 using (SqlConnection conn = new SqlConnection(connectionstring))
                 {
 
-                    cmd.CommandText = "insert into Incidents values(@iid,@itype,@idate,@description,@loc,@status,@sid,@vid,@cid)";
+                    cmd.CommandText = "insert into Incidents values(@iid,@itype,@idate,@loc,@description,@status,@vid,@sid,@cid)";
                     cmd.Parameters.AddWithValue("@iid", incident.IncidentID);
                     cmd.Parameters.AddWithValue("@itype", incident.IncidentType);
                     cmd.Parameters.AddWithValue("@idate", incident.IncidentDate);
@@ -76,19 +69,14 @@ namespace CARS.Repository
                     cmd.Connection = conn;
                     conn.Open();
                     status = cmd.ExecuteNonQuery();
-                    if(status != 1) { throw new IncidentAlreadyExistException("Incident already exists."); }
                 }
                 cmd.Parameters.Clear();
                 
-            }
-            catch (Exception ex) { Console.WriteLine(ex.Message); }
+            }catch (Exception ex) { throw new IncidentAlreadyExistException("Incident already exists."); }
             return status;
         }
-        //Update the status by incidentId
-        //public void updateIncidentStatus(int  incidentId,String status) {
-        //    Incidents uitem=incidents.Find(i=>i.IncidentID==incidentId);
-        //    if (uitem!=null) { uitem.Status = status; }
-        //}
+        
+        //update incident status
         public int updateIncidentStatus(int incidentID,String status) {
             int updatestatus = 0;
             try
@@ -108,6 +96,7 @@ namespace CARS.Repository
         
         }
 
+        //Search Incidents
         public List<Incidents> SearchIncidents(string incidentType)
         {
             List<Incidents> incidents = new List<Incidents>();
@@ -137,37 +126,46 @@ namespace CARS.Repository
                     cmd.Parameters.Clear();
                     if(incidents.Count==0) { throw new IncidentTypeNotFoundException("Incident type not Found"); }
                 }
-            }
-            catch(Exception ex) { Console.WriteLine(ex.Message); }
+            }finally { cmd.Dispose(); }
             return incidents;
         }
 
-        ////Search incidents by incidentType
-        //public List<Incidents> SearchIncidents(string incidentType)
-        //{
-        //    List<Incidents> item = incidents.FindAll(i=>i.IncidentType==incidentType);
-        //    if (item.Count() == 0) { 
-        //        throw new IncidentTypeNotFoundException("Incident not found.");
-        //    }
-        //    else return item;
 
-        //}
+        //Get incidents in date range
+        public List<Incidents> getIncidentsInDateRange(DateTime startDate, DateTime endDate)
+        {
+            List<Incidents> indaterange = new List<Incidents>();
+            try
+            {
+                using(SqlConnection conn = new SqlConnection(connectionstring))
+                {
+                    cmd.CommandText = "select IncidentDate from Incidents where IncidentDate between @sdate and @edate";
+                    cmd.Parameters.AddWithValue("@sdate", startDate);
+                    cmd.Parameters.AddWithValue("@edate", endDate);
+                    cmd.Connection = conn;
+                    conn.Open();
+                    SqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        Incidents incident = new Incidents();
+                        incident.IncidentID = (int)reader["IncidentID"];
+                        incident.IncidentType = (string)reader["IncidentType"];
+                        incident.IncidentDate = ((DateTime)reader["IncidentDate"]).Date;
+                        incident.Description = (string)reader["Description"];
+                        incident.Location = (string)reader["Location"];
+                        incident.Status = (string)reader["Status"];
+                        incident.SuspectID = (int)reader["SuspectID"];
+                        incident.VictimID = (int)reader["VictimID"];
+                        incident.CaseID = (int)reader["CaseID"];
+                        indaterange.Add(incident);
 
-        ////Get incidents in date range
-        //public List<Incidents> getIncidentsInDateRange(string startDate, string endDate)
-        //{
-        //    List<Incidents> indaterange = new List<Incidents>();
-        //    DateOnly sdate=DateOnly.Parse(startDate);
-        //    DateOnly edate=DateOnly.Parse(endDate);
-        //    foreach (Incidents inc in incidents)
-        //    {
-        //        DateOnly idate = DateOnly.Parse(inc.IncidentDate);
-        //        if(idate>sdate && idate < edate)
-        //        {
-        //            indaterange.Add(inc);
-        //        }
-        //    }
-        //    return indaterange;
-        //}
+                    }
+
+
+                }
+            }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
+            return indaterange;
+        }
     }
 }

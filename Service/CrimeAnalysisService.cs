@@ -1,11 +1,6 @@
 ﻿using CARS.Entities;
 using CARS.Exceptions;
 using CARS.Repository;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CARS.Service
 {
@@ -37,10 +32,10 @@ namespace CARS.Service
                 Incidents newincident1 = new Incidents();
                 Console.WriteLine("Enter incidentid");
                 newincident1.IncidentID = int.Parse(Console.ReadLine());
-                Console.WriteLine("Enter incidentdate");
-                newincident1.IncidentDate = DateTime.Parse(Console.ReadLine());
                 Console.WriteLine("Enter incidentype");
                 newincident1.IncidentType = Console.ReadLine();
+                Console.WriteLine("Enter incidentdate");
+                newincident1.IncidentDate = DateTime.Parse(Console.ReadLine());
                 Console.WriteLine("Enter location");
                 newincident1.Location = Console.ReadLine();
                 Console.WriteLine("Enter status");
@@ -51,6 +46,8 @@ namespace CARS.Service
                 newincident1.SuspectID = int.Parse(Console.ReadLine());
                 Console.WriteLine("Enter victimid");
                 newincident1.VictimID = int.Parse(Console.ReadLine());
+                Console.WriteLine("CaseID");
+                newincident1.CaseID = int.Parse(Console.ReadLine());
                 int check = incidentsRepository.AddIncident(newincident1);
                 if (check == 1) { Console.WriteLine("Incident Added Successfully"); }
 
@@ -77,9 +74,15 @@ namespace CARS.Service
 
         public void generateIncidentReport()
         {
-            List<Incidents> incid = incidentsRepository.ViewIncidents();
-            Reports report = reportsRepository.generateIncidentReport(incid.ElementAt(0));
-            Console.WriteLine(report);
+            try
+            {
+                Console.WriteLine("IncidentID");
+                int incidentid = int.Parse(Console.ReadLine());
+                Reports report = reportsRepository.generateIncidentReport(incidentid);
+                Console.WriteLine(report);
+
+            }catch(ReportNotFoundException ex) { Console.WriteLine(ex.Message); }
+            catch (Exception ex) { Console.WriteLine(ex.Message); }
         }
 
         public void getAllCases()
@@ -90,8 +93,11 @@ namespace CARS.Service
 
         public void getCaseDetails()
         {
-            Cases details = casesRepository.getCaseDetails(1);
-            Console.WriteLine(details);
+            Console.WriteLine("CaseID");
+            int caseid = int.Parse(Console.ReadLine());
+            Cases details = casesRepository.getCaseDetails(caseid);
+            if (details.CaseID != 0) Console.WriteLine(details); 
+            else Console.WriteLine($"CaseID {caseid} not found"); 
         }
 
 
@@ -99,10 +105,53 @@ namespace CARS.Service
         {
             Console.WriteLine("CaseId");
             int caseid = int.Parse(Console.ReadLine());
-            Console.WriteLine("Status");
-            string status2 = Console.ReadLine();
-            int status1 = casesRepository.updateCaseDetails(caseid, status2);
-            if (status1 > 1) Console.WriteLine($"{status1} updated successfully");
+            Console.WriteLine("Description");
+            string description = Console.ReadLine();
+            int status1 = casesRepository.updateCaseDetails(caseid, description);
+            if (status1 == 1) Console.WriteLine($"updated successfully");
+            else Console.WriteLine($"CaseID {caseid} not found"); 
+        }
+
+        public void createCase()
+        {
+            Console.WriteLine("CaseID");
+            int caseid = int.Parse(Console.ReadLine());
+            Console.WriteLine("Description");
+            string description = Console.ReadLine();
+            Console.WriteLine("Enter number of incidents");
+            int count=int.Parse(Console.ReadLine());
+            List<Incidents> relatedincidents = new List<Incidents>();
+            while(count > 0)
+            {
+                Incidents newincident1 = new Incidents();
+                Console.WriteLine("Enter incidentid");
+                newincident1.IncidentID = int.Parse(Console.ReadLine());
+                Console.WriteLine("Enter incidentdate");
+                newincident1.IncidentDate = DateTime.Parse(Console.ReadLine());
+                Console.WriteLine("Enter incidentype");
+                newincident1.IncidentType = Console.ReadLine();
+                Console.WriteLine("Enter location");
+                newincident1.Location = Console.ReadLine();
+                Console.WriteLine("Enter status");
+                newincident1.Status = Console.ReadLine();
+                Console.WriteLine("Enter description");
+                newincident1.Description = Console.ReadLine();
+                Console.WriteLine("Enter suspectid");
+                newincident1.SuspectID = int.Parse(Console.ReadLine());
+                Console.WriteLine("Enter victimid");
+                newincident1.VictimID = int.Parse(Console.ReadLine());
+                newincident1.CaseID = 1;
+                int check = incidentsRepository.AddIncident(newincident1);
+                try { 
+                    if (check == 1) Console.WriteLine("Incident Added Successfully"); 
+                }catch(Exception ex) {  Console.WriteLine(ex.Message); }
+                relatedincidents.Add(newincident1 );
+                count--;
+
+            }
+            Cases cases = casesRepository.createCase(description,relatedincidents,caseid);
+            Console.WriteLine($"CaseID:{cases.CaseID},Description:{cases.Description}");
+
         }
 
         

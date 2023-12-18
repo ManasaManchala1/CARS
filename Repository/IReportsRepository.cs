@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace CARS.Repository
 {
-    internal interface IReportsRepository
+    public interface IReportsRepository
     {
-        Reports generateIncidentReport(Incidents incident);
+        Reports generateIncidentReport(int incidentID);
     }
 }

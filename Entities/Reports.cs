@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.NetworkInformation;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CARS.Entities
+﻿namespace CARS.Entities
 {
-    internal class Reports
+    public class Reports
     {
         int reportID;
         int incidentID;
@@ -21,7 +14,8 @@ namespace CARS.Entities
         public DateTime ReportDate { get {  return reportDate; } set { reportDate = value; } }
         public string ReportDetails { get {  return reportDetails; } set { reportDetails = value; } }
         public string Status { get { return status; } set { status = value; } }
-        public Reports(int reportID,int incidentID,int reportingOfficer,DateTime reportDate,string reportDetails,string status) {
+        public Reports(int reportID, int incidentID, int reportingOfficer, DateTime reportDate, string reportDetails, string status)
+        {
             ReportID = reportID;
             IncidentID = incidentID;
             ReportingOfficer = reportingOfficer;

@@ -1,11 +1,6 @@
 ﻿using CARS.Entities;
 using CARS.Utility;
-using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CARS.Repository
 {
@@ -18,19 +13,39 @@ namespace CARS.Repository
             cmd = new SqlCommand();
         }
 
-        //public Cases createCase(string caseDescription, List<Incidents> relatedIncidents)
-        //{
-        //    Cases cases = new Cases();
-        //    try
-        //    {
-        //        using (SqlConnection conn = new SqlConnection(connectionstring))
-        //        {
-                    
+        public Cases createCase(string caseDescription, List<Incidents> relatedIncidents, int caseID)
+        {
+            Cases cases = new Cases();
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionstring))
+                {
+                    cmd.CommandText = "insert into Cases(CaseID,Description) values(@id,@des)";
+                    cmd.Parameters.AddWithValue("@des", caseDescription);
+                    cmd.Parameters.AddWithValue("@id", caseID);
+                    cmd.Connection = conn;
+                    conn.Open();
+                    cases.Description = caseDescription;
+                    cases.CaseID = caseID;
+                    cmd.ExecuteNonQuery();
+                    cmd.Parameters.Clear();
+                    conn.Close();
+                    foreach(Incidents inc in relatedIncidents)
+                    {
+                        cmd.CommandText = "update Incidents set CaseID=@cid where IncidentID=@iid";
+                        cmd.Connection.Open() ;
+                        cmd.Parameters.AddWithValue("@cid", caseID);
+                        cmd.Parameters.AddWithValue("@iid", inc.IncidentID);
+                        cmd.ExecuteNonQuery();
+                        cmd.Parameters.Clear();
+                        conn.Close();
+                    }
 
-        //        }
-        //    }
+                }
+            }catch (Exception ex) { Console.WriteLine(ex.Message); }
+            return cases;
 
-        //}
+        }
 
         public List<Cases> getAllCases()
         {
@@ -47,7 +62,6 @@ namespace CARS.Repository
                     {
                         Cases cases= new Cases();
                         cases.CaseID = (int)reader["CaseID"];
-                        cases.Status = (string)reader["Status"];
                         cases.Description = (string)reader["Description"];
                         list.Add(cases);
                     }
@@ -71,40 +85,31 @@ namespace CARS.Repository
                     while (reader.Read())
                     {
                         cases.CaseID = (int)reader["CaseID"];
-                        cases.Status = (string)reader["Status"];
                         cases.Description = (string)reader["Description"];
                     }
+                    cmd.Parameters.Clear();
                 }
             }catch(Exception ex) { Console.WriteLine(ex.Message); }
             return cases;
         }
-        public int updateCaseDetails(int caseID,string status)
+        public int updateCaseDetails(int caseID,string description)
         {
             int updatestatus = 0;
             try
             {
                 using(SqlConnection conn=new SqlConnection(connectionstring))
                 {
-                    cmd.CommandText = "update Cases set Status=@sts where CaseID=@cid";
-                    cmd.Parameters.AddWithValue("@sts", status);
+                    cmd.CommandText = "update Cases set Description=@dd where CaseID=@cid";
                     cmd.Parameters.AddWithValue("@cid", caseID);
+                    cmd.Parameters.AddWithValue("@dd", description);
                     cmd.Connection = conn;
                     conn.Open();
                     updatestatus= cmd.ExecuteNonQuery();
+                    cmd.Parameters.Clear();
                 }
             }catch (Exception ex) { Console.WriteLine(ex.Message); }
             return updatestatus;
         }
 
-        //public Cases getCaseDetails(int caseId)
-        //{
-        //    Cases casedetails=cases.Find(c=>c.CaseID==caseId);
-        //    return casedetails;
-        //}
-
-        //public void updateCaseDetails(Cases caseToUpdate)
-        //{
-        //    caseToUpdate.Status = "Closed";
-        //}
     }
 }
